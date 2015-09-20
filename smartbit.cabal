@@ -1,0 +1,49 @@
+Name:                  smartbit
+Version:               0.0.0
+Author:                Chris Mahon<cnmahon@gmail.com>
+Maintainer:            Chris Mahon<cnmahon@gmail.com>
+License:               BSD3
+License-File:          LICENSE
+Cabal-Version:         >= 1.10
+Build-Type:            Simple
+
+library
+  exposed-modules:     Smartbit.API
+  other-modules:       Smartbit.Rest
+                       Smartbit.Socket
+                       Smartbit.Types
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  build-depends:       aeson
+                     , base
+                     , base58string
+                     , bitcoin-types
+                     , bytestring
+                     , either
+                     , mtl
+                     , network
+                     , scientific
+                     , servant
+                     , servant-client
+                     , text
+                     , transformers
+                     , websockets
+                     , wuss
+  
+
+executable rest
+  main-is:             rest.hs
+  hs-source-dirs:      examples
+  default-language:    Haskell2010
+  build-depends:       base
+                     , base58string
+                     , smartbit
+
+executable sub
+  main-is:             sub.hs
+  hs-source-dirs:      examples
+  default-language:    Haskell2010
+  build-depends:       base
+                     , smartbit
+                     , transformers
+
