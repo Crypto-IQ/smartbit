@@ -91,17 +91,10 @@ data ExchangeRate = ExchangeRate
   { _xrCode :: Text
   , _xrName :: Text
   , _xrRate :: Scientific
-  } deriving Show
-
-parseExchangeRate :: Value -> Parser ExchangeRate
-parseExchangeRate = withObject "exchange rate" $ \o -> do
-  _xrCode <- o .: "code"
-  _xrName <- o .: "name"
-  _xrRate <- o .: "rate"
-  return ExchangeRate{..}
+  } deriving (Generic,Show)
 
 instance FromJSON ExchangeRate where
-  parseJSON = parseExchangeRate
+  parseJSON = genericParseJSON $ aesonPrefix snakeCase
 
 -----------------------------------------------------------------------------
 
@@ -124,7 +117,7 @@ data Pool = Pool
   { _plName :: Text
   , _plLink :: Text
   , _plBlockCount :: Int
-  } deriving (Show,Generic)
+  } deriving (Generic,Show)
 
 instance FromJSON Pool where
    parseJSON = genericParseJSON $ aesonPrefix snakeCase
