@@ -7,6 +7,7 @@ module Smartbit.Rest where
 
 import           Control.Monad.Trans.Either
 import           Data.Proxy
+import           Data.Text
 import           Servant.API
 import           Servant.Client
 import           Smartbit.Types
@@ -41,6 +42,21 @@ type API = "v1"
            "v1"
            :> "exchange-rates"
            :> Get '[JSON] ExchangeRates
+
+           :<|>
+
+           "v1"
+           :> "blockchain"
+           :> "pool"
+           :> Capture "pool" Text
+           :> Get '[JSON] Pools          
+           
+           :<|>
+
+           "v1"
+           :> "blockchain"
+           :> "pools"
+           :> Get '[JSON] Pools
            
            :<|>
            
@@ -58,10 +74,14 @@ api = Proxy
 
 address :: Addresses -> SmartbitT AddressesData
 xrates :: SmartbitT ExchangeRates
+pool :: Text -> SmartbitT Pools
+pools :: SmartbitT Pools
 totals :: SmartbitT Totals
 
 address 
   :<|> xrates
+  :<|> pool
+  :<|> pools
   :<|> totals = client api (BaseUrl Https restHost restPort)
 
 

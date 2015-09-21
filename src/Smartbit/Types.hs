@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -9,6 +10,7 @@ module Smartbit.Types where
 
 import           Control.Applicative              ((<|>))
 import           Data.Aeson
+import           Data.Aeson.Casing
 import           Data.Aeson.Types
 import qualified Data.Base58String.Bitcoin as B58
 import qualified Data.Bitcoin.Types        as B
@@ -16,6 +18,7 @@ import           Data.Foldable                    (asum)
 import           Data.Scientific
 import           Data.Text                        (Text)
 import           Data.Text                 as T   (intercalate)
+import           GHC.Generics
 import           Servant.Common.Text              (ToText(..))
 
 -----------------------------------------------------------------------------
@@ -103,37 +106,50 @@ instance FromJSON ExchangeRate where
 -----------------------------------------------------------------------------
 
 newtype ExchangeRates = ExchangeRates
-  {_xrRates :: [ExchangeRate]
+  { _xrRates :: [ExchangeRate]
   } deriving Show
 
 parseExchangeRates :: Value -> Parser ExchangeRates
 parseExchangeRates = withObject "exchange rates" $ \o -> do
   x <- o .: "exchange_rates"
-  xrs <- parseJSON x
-  return $ ExchangeRates xrs
+  _xrRates <- parseJSON x
+  return $ ExchangeRates{..}
 
 instance FromJSON ExchangeRates where
   parseJSON = parseExchangeRates
 
 -----------------------------------------------------------------------------
 
-data Totals = Totals
-  { _totBlockCount :: Scientific
-  , _totTxnCount :: Scientific
-  , _totCurrency :: Scientific
-  }
-  deriving Show
+data Pool = Pool
+  { _plName :: Text
+  , _plLink :: Text
+  , _plBlockCount :: Int
+  } deriving (Show,Generic)
 
-parseTotals :: Value -> Parser Totals
-parseTotals = withObject "totals" $ \o -> do
-  x <- o .: "totals"
-  _totBlockCount <- x .: "block_count"
-  _totTxnCount <- x .: "transaction_count"
-  _totCurrency <- read <$> x .: "currency"
-  return Totals{..}
+instance FromJSON Pool where
+   parseJSON = genericParseJSON $ aesonPrefix snakeCase
 
-instance FromJSON Totals where
-  parseJSON = parseTotals
+-----------------------------------------------------------------------------
+
+newtype Pools = Pools
+  { _pools :: [Pool]
+  } deriving Show
+
+parseSinglePool :: Value -> Parser Pools
+parseSinglePool = withObject "pool" $ \o -> do
+  ps <- o .: "pool"
+  p <- parseJSON ps
+  return $ Pools [p]
+
+parseManyPools :: Value -> Parser Pools
+parseManyPools = withObject "pools" $ \o -> do
+  ps <- o .: "pools"
+  _pools <- parseJSON ps
+  return Pools{..}
+
+instance FromJSON Pools where
+  parseJSON v = parseSinglePool v <|>
+                parseManyPools v
 
 -----------------------------------------------------------------------------
 
@@ -196,3 +212,23 @@ responseParsers = [ parseNewBlock
 
 instance FromJSON SubscriptionResponse where
   parseJSON v = asum $ responseParsers <*> [v]
+
+-----------------------------------------------------------------------------
+
+data Totals = Totals
+  { _totBlockCount :: Scientific
+  , _totTxnCount :: Scientific
+  , _totCurrency :: Scientific
+  }
+  deriving Show
+
+parseTotals :: Value -> Parser Totals
+parseTotals = withObject "totals" $ \o -> do
+  x <- o .: "totals"
+  _totBlockCount <- x .: "block_count"
+  _totTxnCount <- x .: "transaction_count"
+  _totCurrency <- read <$> x .: "currency"
+  return Totals{..}
+
+instance FromJSON Totals where
+  parseJSON = parseTotals
