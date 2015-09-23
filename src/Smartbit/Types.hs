@@ -17,7 +17,7 @@ import qualified Data.Bitcoin.Types        as B
 import           Data.Foldable                    (asum)
 import           Data.Scientific
 import           Data.Text                        (Text)
-import           Data.Text                 as T   (intercalate)
+import           Data.Text                 as T   (intercalate,pack,unpack)
 import           GHC.Generics
 import           Servant.Common.Text              (ToText(..))
 
@@ -28,24 +28,43 @@ type Port = Int
 
 -----------------------------------------------------------------------------
 
-newtype Addresses = Addresses { addresses :: [B.Address]}
+newtype BTC = BTC
+  { unBTC :: Scientific
+  }
+  deriving
+  ( Eq, Fractional, Ord, Num, Real, RealFrac, Read, Show)
+
+parseBTC :: Value -> Parser BTC
+parseBTC = withText "BTC" $ \v ->
+  case reads (T.unpack v) of
+    ((b,_):_) -> return (BTC b)
+    _         -> fail "Could not parse text to scientific"
+
+instance FromJSON BTC where
+  parseJSON = parseBTC
+
+-----------------------------------------------------------------------------
+
+newtype Addresses = Addresses
+  { _addresses :: [B.Address]
+  } deriving Show
 
 instance ToText Addresses where
-  toText =  T.intercalate "," . map B58.toText . addresses
+  toText =  T.intercalate "," . map B58.toText . _addresses
 
 -----------------------------------------------------------------------------
 
 data AddressStats = AddressStats
-  { _astReceived :: Scientific
-  , _astSpent :: Scientific
-  , _astBalance :: Scientific
+  { _astReceived :: BTC
+  , _astSpent :: BTC
+  , _astBalance :: BTC
   } deriving Show
 
 instance FromJSON AddressStats where
   parseJSON = withObject "address stats" $ \o -> do
-    _astReceived <- read <$> o .: "received"
-    _astSpent <- read <$> o .: "spent"
-    _astBalance <- read <$> o .: "balance"
+    _astReceived <- o .: "received"
+    _astSpent <- o .: "spent"
+    _astBalance <- o .: "balance"
     return AddressStats{..}
 
 -----------------------------------------------------------------------------
@@ -90,7 +109,7 @@ instance FromJSON AddressesData where
 data ExchangeRate = ExchangeRate
   { _xrCode :: Text
   , _xrName :: Text
-  , _xrRate :: Scientific
+  , _xrRate :: BTC
   } deriving (Generic,Show)
 
 instance FromJSON ExchangeRate where
@@ -143,6 +162,31 @@ parseManyPools = withObject "pools" $ \o -> do
 instance FromJSON Pools where
   parseJSON v = parseSinglePool v <|>
                 parseManyPools v
+
+-----------------------------------------------------------------------------
+
+data SortBy = 
+    Balance
+  | Address
+  | Received
+  | Spent
+  | TransactionCcount
+  | InputCount
+  | OutputCount
+    deriving (Show)
+
+instance ToText SortBy where
+  toText = T.pack . snakeCase . show
+
+-----------------------------------------------------------------------------
+
+data SortDir =
+    Asc
+  | Desc
+    deriving Show
+
+instance ToText SortDir where
+  toText = T.pack . snakeCase . show  
 
 -----------------------------------------------------------------------------
 
@@ -209,9 +253,9 @@ instance FromJSON SubscriptionResponse where
 -----------------------------------------------------------------------------
 
 data Totals = Totals
-  { _totBlockCount :: Scientific
-  , _totTxnCount :: Scientific
-  , _totCurrency :: Scientific
+  { _totBlockCount :: Int
+  , _totTxnCount :: Int
+  , _totCurrency :: BTC
   }
   deriving Show
 
@@ -220,7 +264,7 @@ parseTotals = withObject "totals" $ \o -> do
   x <- o .: "totals"
   _totBlockCount <- x .: "block_count"
   _totTxnCount <- x .: "transaction_count"
-  _totCurrency <- read <$> x .: "currency"
+  _totCurrency <- x .: "currency"
   return Totals{..}
 
 instance FromJSON Totals where

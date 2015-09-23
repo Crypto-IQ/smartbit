@@ -35,10 +35,26 @@ type API = "v1"
            :> "blockchain"
            :> "address"
            :> Capture "address" Addresses
+           :> QueryParam "limit" Int
+           :> QueryParam "dir" SortDir
+           :> QueryParam "prev" Text
+           :> QueryParam "next" Text          
            :> Get '[JSON] AddressesData
            
            :<|>
+
+           "v1"
+           :> "blockchain"
+           :> "addresses"
+           :> QueryParam "limit" Int
+           :> QueryParam "sort" SortBy 
+           :> QueryParam "dir" SortDir
+           :> QueryParam "prev" Text
+           :> QueryParam "next" Text
+           :> Get '[JSON] AddressesData
            
+           :<|>
+
            "v1"
            :> "exchange-rates"
            :> Get '[JSON] ExchangeRates
@@ -72,17 +88,37 @@ api = Proxy
 
 -----------------------------------------------------------------------------
 
-address :: Addresses -> SmartbitT AddressesData
-xrates :: SmartbitT ExchangeRates
-pool :: Text -> SmartbitT Pools
-pools :: SmartbitT Pools
-totals :: SmartbitT Totals
+address ::       Addresses -> 
+                 Maybe Int -> 
+                 Maybe SortDir -> 
+                 Maybe Text -> 
+                 Maybe Text -> 
+                 SmartbitT AddressesData
+addresses ::     Maybe Int -> 
+                 Maybe SortBy -> 
+                 Maybe SortDir -> 
+                 Maybe Text -> 
+                 Maybe Text -> 
+                 SmartbitT AddressesData
+exchangerates :: SmartbitT ExchangeRates
+pool ::          Text -> 
+                 SmartbitT Pools
+pools ::         SmartbitT Pools
+totals ::        SmartbitT Totals
 
 address 
-  :<|> xrates
+  :<|> addresses
+  :<|> exchangerates
   :<|> pool
   :<|> pools
   :<|> totals = client api (BaseUrl Https restHost restPort)
 
+-----------------------------------------------------------------------------
+
+address' :: Addresses -> SmartbitT AddressesData
+address' as = address as Nothing Nothing Nothing Nothing
+
+addresses' :: SmartbitT AddressesData
+addresses' = addresses Nothing Nothing Nothing Nothing Nothing
 
 
