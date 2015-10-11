@@ -1,5 +1,9 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -17,9 +21,10 @@ import qualified Data.Bitcoin.Types        as B
 import           Data.Foldable                    (asum)
 import           Data.Scientific
 import           Data.Text                        (Text)
-import           Data.Text                 as T   (intercalate,pack,unpack)
+import qualified Data.Text                 as T   (intercalate,pack,unpack)
 import           GHC.Generics
 import           Servant.Common.Text              (ToText(..))
+import           Smartbit.Util
 
 -----------------------------------------------------------------------------
 
@@ -42,6 +47,15 @@ parseBTC = withText "BTC" $ \v ->
 
 instance FromJSON BTC where
   parseJSON = parseBTC
+
+-----------------------------------------------------------------------------
+
+newtype Address = Address
+  { _address :: B.Address
+  } deriving Show
+
+instance ToText Address where
+  toText = B58.toText . _address
 
 -----------------------------------------------------------------------------
 
@@ -165,28 +179,35 @@ instance FromJSON Pools where
 
 -----------------------------------------------------------------------------
 
-data SortBy = 
-    Balance
-  | Address
-  | Received
-  | Spent
-  | TransactionCcount
-  | InputCount
-  | OutputCount
-    deriving (Show)
+data Address'
+data Balance'
+data InputCount'
+data OutputCount'
+data Received'
+data Spent'
+data TransactionCount'
+data TxIndex'
 
-instance ToText SortBy where
-  toText = T.pack . snakeCase . show
+data SortBy a = SortBy
+
+instance Show (SortBy Address') where show _ = "address"
+instance Show (SortBy Balance') where show _ = "balance"
+instance Show (SortBy InputCount') where show _ = "input_count"
+instance Show (SortBy OutputCount') where show _ = "output_count"
+instance Show (SortBy Received') where show _ = "received"
+instance Show (SortBy Spent') where show _ = "spent"
+instance Show (SortBy TransactionCount') where show _ = "transaction_count"
+instance Show (SortBy TxIndex') where show _ = "txindex"
 
 -----------------------------------------------------------------------------
 
 data SortDir =
-    Asc
-  | Desc
+    SortDir'Asc
+  | SortDir'Desc
     deriving Show
 
 instance ToText SortDir where
-  toText = T.pack . snakeCase . show  
+  toText = T.pack . snakeCase . drop 8 . show  
 
 -----------------------------------------------------------------------------
 
@@ -269,3 +290,15 @@ parseTotals = withObject "totals" $ \o -> do
 
 instance FromJSON Totals where
   parseJSON = parseTotals
+
+-----------------------------------------------------------------------------
+
+data TxnFilter = 
+    TxnFilter'OpReturns
+  | TxnFilter'Unspent
+  | TxnFilter'MultisigUnspent
+    deriving (Show)
+
+instance ToText TxnFilter where
+  toText = T.pack . hyphenCase . drop 10 . show
+

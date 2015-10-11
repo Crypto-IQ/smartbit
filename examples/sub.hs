@@ -4,6 +4,8 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Smartbit.API
 
+-----------------------------------------------------------------------------
+
 main :: IO ()
 main = runSubscription $ do
   subNewTxns
