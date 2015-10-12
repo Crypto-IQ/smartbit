@@ -16,7 +16,7 @@ main = do
   print =<< runSmartbit (address    a1
                                     (Just TxnFilter'OpReturns)
                                     Nothing
-                                    (Just (Item (SortBy :: SortBy TxIndex')))
+                                    (Just (Item (SortBy :: SortBy TxnIndex')))
                                     Nothing
                                     Nothing
                                     Nothing)

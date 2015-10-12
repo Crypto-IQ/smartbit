@@ -22,6 +22,8 @@ library
                      , base58string
                      , bitcoin-types
                      , bytestring
+                     , lens
+                     , lens-aeson
                      , either
                      , mtl
                      , network

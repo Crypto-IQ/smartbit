@@ -181,23 +181,35 @@ instance FromJSON Pools where
 
 data Address'
 data Balance'
+data BlockIndex'
+data Fee'
+data InputAmount'
 data InputCount'
+data OutputAmount'
 data OutputCount'
 data Received'
+data Size'
 data Spent'
-data TransactionCount'
-data TxIndex'
+data TxnCount'
+data TxnId'
+data TxnIndex'
 
 data SortBy a = SortBy
 
 instance Show (SortBy Address') where show _ = "address"
 instance Show (SortBy Balance') where show _ = "balance"
+instance Show (SortBy BlockIndex') where show _ = "block_index"
+instance Show (SortBy Fee') where show _ = "fee"
+instance Show (SortBy InputAmount') where show _ = "input_amount"
 instance Show (SortBy InputCount') where show _ = "input_count"
+instance Show (SortBy OutputAmount') where show _ = "output_amount"
 instance Show (SortBy OutputCount') where show _ = "output_count"
 instance Show (SortBy Received') where show _ = "received"
+instance Show (SortBy Size') where show _ = "spent"
 instance Show (SortBy Spent') where show _ = "spent"
-instance Show (SortBy TransactionCount') where show _ = "transaction_count"
-instance Show (SortBy TxIndex') where show _ = "txindex"
+instance Show (SortBy TxnCount') where show _ = "transaction_count"
+instance Show (SortBy TxnId') where show _ = "txid"
+instance Show (SortBy TxnIndex') where show _ = "txindex"
 
 -----------------------------------------------------------------------------
 

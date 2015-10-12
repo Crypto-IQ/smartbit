@@ -9,8 +9,7 @@ module Smartbit.Util where
 
 import           Data.Aeson.Casing.Internal
 import           Data.Char
-import           Data.Text                      (Text)
-import qualified Data.Text                 as T (intercalate,pack,unpack)
+import qualified Data.Text                 as T (pack)
 import           Servant.Common.Text            (ToText(..))
 
 -----------------------------------------------------------------------------
@@ -24,15 +23,15 @@ hyphenCase = u . applyFirst toLower
 
 -----------------------------------------------------------------------------
 
-type family HElem (r :: k) (rs :: [k]) :: Bool where
-  HElem r '[] = 'False
-  HElem r (r ': rs) = 'True
-  HElem r (x ': rs) = HElem r rs
+type family Elem (r :: k) (rs :: [k]) :: Bool where
+  Elem r '[] = 'False
+  Elem r (r ': rs) = 'True
+  Elem r (x ': rs) = Elem r rs
 
 -----------------------------------------------------------------------------
 
 data Select (ts :: [*]) where
-  Item :: (Show t,HElem t ts ~ 'True) => t -> Select ts
+  Item :: (Show t,Elem t ts ~ 'True) => t -> Select ts
 
 instance Show (Select a) where
    show (Item x) = show x

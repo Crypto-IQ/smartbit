@@ -37,7 +37,7 @@ runSmartbit = runEitherT
 type APIVersion = "v1"
 type Blockchain = "blockchain"
 
-type SortBy'Address   = Select '[SortBy TxIndex']
+type SortBy'Address   = Select '[SortBy TxnIndex']
 
 type SortBy'Addresses = Select '[ SortBy Address'
                                 , SortBy Balance'
@@ -45,7 +45,17 @@ type SortBy'Addresses = Select '[ SortBy Address'
                                 , SortBy OutputCount'
                                 , SortBy Received'
                                 , SortBy Spent'
-                                , SortBy TransactionCount'
+                                , SortBy TxnCount'
+                                ]
+
+type SortBy'Block     = Select '[ SortBy BlockIndex'
+                                , SortBy Fee'
+                                , SortBy InputAmount'
+                                , SortBy InputCount'
+                                , SortBy OutputAmount'
+                                , SortBy OutputCount'
+                                , SortBy Size'
+                                , SortBy TxnId'
                                 ]
 
 -----------------------------------------------------------------------------
@@ -74,6 +84,19 @@ type API = APIVersion
            :> QueryParam "next" Text
            :> Get '[JSON] AddressesData
            
+           :<|>
+
+           APIVersion
+           :> Blockchain
+           :> "block"
+           :> Capture "blockheight" Int
+           :> QueryParam "limit" Int
+           :> QueryParam "sort" SortBy'Block
+           :> QueryParam "dir" SortDir
+           :> QueryParam "prev" Text
+           :> QueryParam "next" Text
+           :> Get '[JSON] Value
+
            :<|>
 
            APIVersion
@@ -126,6 +149,14 @@ addresses ::     Maybe Int ->
                  Maybe Text ->
                  SmartbitT AddressesData
 
+block ::         Int -> 
+                 Maybe Int ->
+                 Maybe SortBy'Block ->
+                 Maybe SortDir ->
+                 Maybe Text ->
+                 Maybe Text ->
+                 SmartbitT Value
+
 exchangerates :: SmartbitT ExchangeRates
 
 pool ::          Text ->
@@ -137,6 +168,7 @@ totals ::        SmartbitT Totals
 
 address
   :<|> addresses
+  :<|> block
   :<|> exchangerates
   :<|> pool
   :<|> pools
@@ -150,4 +182,5 @@ address' as = address as Nothing Nothing Nothing Nothing Nothing Nothing
 addresses' :: SmartbitT AddressesData
 addresses' = addresses Nothing Nothing Nothing Nothing Nothing
 
-
+block' :: Int -> SmartbitT Value
+block' h = block h Nothing Nothing Nothing Nothing Nothing
