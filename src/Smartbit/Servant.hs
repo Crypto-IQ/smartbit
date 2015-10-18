@@ -18,16 +18,14 @@ import           Servant.Common.Req
 
 -----------------------------------------------------------------------------
 
-data CaptureOpt (sym :: Symbol) a
-  deriving (Typeable)
+data CaptureOpt (sym :: Symbol) a deriving (Typeable)
 
 instance (KnownSymbol capture, ToText a, HasClient sublayout)
   => HasClient (CaptureOpt capture a :> sublayout) where
-
-  type Client (CaptureOpt capture a :> sublayout) = Maybe a -> Client sublayout
-
-  clientWithRoute Proxy req baseurl val =
-    clientWithRoute (Proxy :: Proxy sublayout)
-                    (maybe req (flip appendToPath req . unpack . toText) val)
-                    baseurl
+  type Client (CaptureOpt capture a :> sublayout) = 
+    Maybe a -> Client sublayout
+  clientWithRoute Proxy req baseurl val = clientWithRoute
+    (Proxy :: Proxy sublayout)
+    (maybe req (flip appendToPath req . unpack . toText) val)
+    baseurl
 

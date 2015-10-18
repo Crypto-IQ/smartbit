@@ -8,6 +8,8 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+
 module Smartbit.Types where
 
 -----------------------------------------------------------------------------
@@ -196,6 +198,21 @@ data TxnIndex'
 
 data SortBy a = SortBy
 
+sortByAddress = SortBy :: SortBy Address'
+sortByBalance = SortBy :: SortBy Balance'
+sortByBlockIndex = SortBy :: SortBy BlockIndex'
+sortByFee = SortBy :: SortBy Fee'
+sortByInputAmount = SortBy :: SortBy InputAmount'
+sortByInputCount = SortBy :: SortBy InputCount'
+sortByOutputAmount = SortBy :: SortBy OutputAmount'
+sortByOutputCount = SortBy :: SortBy OutputCount'
+sortByReceived = SortBy :: SortBy Received'
+sortBySize = SortBy :: SortBy Size'
+sortBySpent = SortBy :: SortBy Spent'
+sortByTxnCount = SortBy :: SortBy TxnCount'
+sortByTxnId = SortBy :: SortBy TxnId'
+sortByTxnIndex = SortBy :: SortBy TxnIndex'
+
 instance Show (SortBy Address') where show _ = "address"
 instance Show (SortBy Balance') where show _ = "balance"
 instance Show (SortBy BlockIndex') where show _ = "block_index"
@@ -205,7 +222,7 @@ instance Show (SortBy InputCount') where show _ = "input_count"
 instance Show (SortBy OutputAmount') where show _ = "output_amount"
 instance Show (SortBy OutputCount') where show _ = "output_count"
 instance Show (SortBy Received') where show _ = "received"
-instance Show (SortBy Size') where show _ = "spent"
+instance Show (SortBy Size') where show _ = "size"
 instance Show (SortBy Spent') where show _ = "spent"
 instance Show (SortBy TxnCount') where show _ = "transaction_count"
 instance Show (SortBy TxnId') where show _ = "txid"

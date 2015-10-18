@@ -37,7 +37,8 @@ runSmartbit = runEitherT
 type APIVersion = "v1"
 type Blockchain = "blockchain"
 
-type SortBy'Address   = Select '[SortBy TxnIndex']
+type SortBy'Address   = Select '[ SortBy TxnIndex'
+                                ]
 
 type SortBy'Addresses = Select '[ SortBy Address'
                                 , SortBy Balance'

@@ -5,10 +5,14 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module Smartbit.Util where
 
 import           Data.Aeson.Casing.Internal
+import qualified Data.Base58String.Bitcoin as B
 import           Data.Char
+import           Data.String
 import qualified Data.Text                 as T (pack)
 import           Servant.Common.Text            (ToText(..))
 
@@ -20,6 +24,11 @@ hyphenCase = u . applyFirst toLower
   u []                 = []
   u (x:xs) | isUpper x = '-' : toLower x : hyphenCase xs
            | otherwise = x : u xs
+
+-----------------------------------------------------------------------------
+
+instance IsString B.Base58String where
+  fromString = B.fromText . T.pack 
 
 -----------------------------------------------------------------------------
 
